@@ -11,6 +11,7 @@ import java.time.Instant;
 import static com.gigaspaces.InstanceEventType.START_INSTANCES;
 import static com.gigaspaces.InstanceEventType.STOP_INSTANCES;
 
+@SuppressWarnings("WeakerAccess")
 public class InstanceEvent {
     private final InstanceEventType type;
     private final String eventId;

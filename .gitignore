@@ -1,3 +1,7 @@
 .idea
 awscloudtrailprocessinglibrary.properties
-commons-logging.properties
+target
+hsqldb
+email.properties
+logs
+dependency-reduced-pom.xml
