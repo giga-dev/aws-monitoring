@@ -29,6 +29,26 @@
           <artifactId>ec2</artifactId>
           <version>2.7.5</version>
       </dependency>
+      <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-cloudwatch -->
+      <dependency>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>aws-java-sdk-cloudwatch</artifactId>
+          <version>1.11.602</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-core -->
+      <dependency>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>aws-java-sdk-core</artifactId>
+          <version>1.11.602</version>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
+      <dependency>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+          <version>4.5.9</version>
+      </dependency>
+
       <!-- https://mvnrepository.com/artifact/javax.mail/mail -->
       <dependency>
           <groupId>javax.mail</groupId>
@@ -47,6 +67,13 @@
           <artifactId>stringtemplate</artifactId>
           <version>3.2.1</version>
       </dependency>
+      <!-- https://mvnrepository.com/artifact/org.json/json -->
+      <dependency>
+          <groupId>org.json</groupId>
+          <artifactId>json</artifactId>
+          <version>20180813</version>
+      </dependency>
+
       <dependency>
           <groupId>log4j</groupId>
           <artifactId>log4j</artifactId>
@@ -80,6 +107,14 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
+      <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all -->
+      <dependency>
+          <groupId>org.hamcrest</groupId>
+          <artifactId>hamcrest-all</artifactId>
+          <version>1.3</version>
+          <scope>test</scope>
+      </dependency>
+
   </dependencies>
 
   <build>

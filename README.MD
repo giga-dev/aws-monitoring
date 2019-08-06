@@ -10,3 +10,4 @@
 4. run the uber jar 
 `java -cp /home/barak/.m2/repository/com/gigasapces/aws/1.0-SNAPSHOT/aws-1.0-SNAPSHOT.jar com.gigaspaces.Loop`
 
+

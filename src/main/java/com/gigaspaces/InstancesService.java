@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ec2.Ec2Client;
-import software.amazon.awssdk.services.ec2.model.DescribeInstancesRequest;
-import software.amazon.awssdk.services.ec2.model.Ec2Exception;
-import software.amazon.awssdk.services.ec2.model.Filter;
-import software.amazon.awssdk.services.ec2.model.Reservation;
+import software.amazon.awssdk.services.ec2.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,5 +45,19 @@ public class InstancesService {
         for (AWSData<Reservation> instance : instances.describeAllRunningInstances()) {
             logger.info("instance {}", instance);
         }
+    }
+
+    void stopInstance(Instance instance) {
+        try (Ec2Client client = Ec2Client.builder()
+                .region(instance.getRegion())
+                .credentialsProvider(ProfileCredentialsProvider.builder().profileName(instance.getProfile()).build())
+                .build()) {
+            client.stopInstances(StopInstancesRequest.builder().instanceIds(instance.getInstanceId()).build());
+        } catch(Ec2Exception e){
+            if (400 != e.statusCode()) {
+                throw e;
+            }
+        }
+
     }
 }

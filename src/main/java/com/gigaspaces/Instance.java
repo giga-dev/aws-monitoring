@@ -17,8 +17,10 @@ public class Instance implements Comparable<Instance> {
     private String eventName;
     private Instant startedAt;
     private String type;
+    private boolean spot;
+    private String effectiveUserName;
 
-    public Instance(String profile, Region region, Option<String> name, String instanceId, String startedBy, String eventName, Instant startedAt, String type) {
+    public Instance(String profile, Region region, Option<String> name, String instanceId, String startedBy, String eventName, Instant startedAt, String type, boolean spot, String effectiveUserName) {
         this.profile = profile;
         this.region = region;
         this.name = name;
@@ -27,6 +29,8 @@ public class Instance implements Comparable<Instance> {
         this.eventName = eventName;
         this.startedAt = startedAt;
         this.type = type;
+        this.spot = spot;
+        this.effectiveUserName = effectiveUserName;
     }
 
     @Override
@@ -84,6 +88,13 @@ public class Instance implements Comparable<Instance> {
         return name.getOrElse("---");
     }
 
+    public boolean isSpot() {
+        return spot;
+    }
+
+    public String getEffectiveUserName() {
+        return effectiveUserName;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -110,6 +121,8 @@ public class Instance implements Comparable<Instance> {
                 ", profile='" + profile + '\'' +
                 ", region=" + region +
                 ", eventName='" + eventName + '\'' +
+                ", isSpot='" + spot + '\'' +
+                ", effectiveUser='" + effectiveUserName + '\'' +
                 '}';
     }
 

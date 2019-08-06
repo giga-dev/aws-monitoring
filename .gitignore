@@ -5,3 +5,5 @@ hsqldb
 email.properties
 logs
 dependency-reduced-pom.xml
+spotinsts_token
+names.properties

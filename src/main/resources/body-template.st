@@ -20,16 +20,18 @@
                 <th>Instance Id</th>
                 <th>Profile</th>
                 <th>Region</th>
+                <th>Spot</th>
             </tr>
             $added:{
               <tr>
                 <td>$it.since$</td>
                 <td>$it.type$</td>
-                <td>$it.startedBy$</td>
+                <td>$it.effectiveUserName$</td>
                 <td>$it.nameOr$</td>
                 <td>$it.instanceId$</td>
                 <td>$it.profile$</td>
                 <td>$it.region$</td>
+                <td>$it.spot$</td>
               </tr>
             }$
          </table>
@@ -50,16 +52,18 @@
                 <th>Instance Id</th>
                 <th>Profile</th>
                 <th>Region</th>
+                <th>Spot</th>
             </tr>
             $unchanged:{
               <tr>
                 <td>$it.since$</td>
                 <td>$it.type$</td>
-                <td>$it.startedBy$</td>
+                <td>$it.effectiveUserName$</td>
                 <td>$it.nameOr$</td>
                 <td>$it.instanceId$</td>
                 <td>$it.profile$</td>
                 <td>$it.region$</td>
+                <td>$it.spot$</td>
               </tr>
             }$
          </table>
@@ -80,16 +84,18 @@
                 <th>Instance Id</th>
                 <th>Profile</th>
                 <th>Region</th>
+                <th>Spot</th>
             </tr>
             $removed:{
               <tr>
                 <td>$it.since$</td>
                 <td>$it.type$</td>
-                <td>$it.startedBy$</td>
+                <td>$it.effectiveUserName$</td>
                 <td>$it.nameOr$</td>
                 <td>$it.instanceId$</td>
                 <td>$it.profile$</td>
                 <td>$it.region$</td>
+                <td>$it.spot$</td>
               </tr>
             }$
          </table>

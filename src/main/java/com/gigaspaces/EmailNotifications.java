@@ -8,10 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
+import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
@@ -76,5 +73,86 @@ public class EmailNotifications {
             res.load(is);
             return res;
         }
+    }
+
+    private void checkEmail() throws MessagingException, IOException {
+        Properties properties = new Properties();
+
+        String host = "pop.gmail.com";
+        properties.put("mail.pop3.host", host);
+        properties.put("mail.pop3.port", "995");
+        properties.put("mail.pop3.starttls.enable", "true");
+        Session emailSession = Session.getDefaultInstance(properties);
+        Store store = emailSession.getStore("pop3s");
+        Properties ep = readEmailProperties();
+        store.connect(host, ep.getProperty("fromUser"), ep.getProperty("fromUserEmailPassword"));
+        Folder emailFolder = store.getFolder("INBOX");
+        emailFolder.open(Folder.READ_WRITE);
+        Message[] messages = emailFolder.getMessages();
+        logger.info("messages.length--- {}", messages.length);
+
+        for (int i = 0, n = messages.length; i < n; i++) {
+            Message message = messages[i];
+            logger.info("---------------------------------");
+            logger.info("Email Number {}", (i + 1));
+            logger.info("Subject: {}", message.getSubject());
+            logger.info("From: {}", message.getFrom()[0]);
+            logger.info("Text: {}", message.getContent().toString());
+            logger.info("Sent Date: {}", message.getSentDate());
+            if(message.getSubject().contains("Delivery Status Notification")
+                    || message.getSubject().startsWith("Re: ")
+                    || message.getFrom()[0].toString().contains("noreply")
+                    || message.getFrom()[0].toString().contains("do-not-reply")){
+                logger.info("deleting mail {} from {}",  message.getSubject(), message.getFrom()[0]);
+                message.setFlag(Flags.Flag.DELETED, true);
+            }
+        }
+        emailFolder.close(true);
+        store.close();
+    }
+
+    public boolean shouldKeepInstance(String instanceId) {
+        boolean ret = false;
+        Properties properties = new Properties();
+
+        String host = "pop.gmail.com";
+        properties.put("mail.pop3.host", host);
+        properties.put("mail.pop3.port", "995");
+        properties.put("mail.pop3.starttls.enable", "true");
+        Session emailSession = Session.getDefaultInstance(properties);
+        try {
+            Store store = emailSession.getStore("pop3s");
+            Properties ep = readEmailProperties();
+            store.connect(host, ep.getProperty("fromUser"), ep.getProperty("fromUserEmailPassword"));
+            Folder emailFolder = store.getFolder("INBOX");
+            emailFolder.open(Folder.READ_WRITE);
+            Message[] messages = emailFolder.getMessages();
+            logger.info("messages.length--- {}", messages.length);
+            String subject = String.format("Please keep my instance: %s running", instanceId);
+
+            for (int i = 0, n = messages.length; i < n; i++) {
+                Message message = messages[i];
+                logger.info("---------------------------------");
+                logger.info("Email Number {}", (i + 1));
+                logger.info("Subject: {}", message.getSubject());
+                logger.info("From: {}", message.getFrom()[0]);
+                logger.info("Text: {}", message.getContent().toString());
+                logger.info("Sent Date: {}", message.getSentDate());
+                if (message.getSubject().trim().equalsIgnoreCase(subject)){
+                    message.setFlag(Flags.Flag.DELETED, true);
+                    ret = true;
+                }
+            }
+            emailFolder.close(true);
+            store.close();
+        }catch(Exception e){
+            logger.error(e.toString(), e);
+        }
+        return ret;
+    }
+
+    public static void main(String[] args) throws IOException, MessagingException {
+        EmailNotifications emailNotifications = new EmailNotifications();
+        emailNotifications.checkEmail();
     }
 }
