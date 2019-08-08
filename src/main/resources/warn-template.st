@@ -1,11 +1,16 @@
 <html>
     <body>
       <div>
-             Dear $subject.name$,
-             It seems that you have left an AWS instance running after working hours.
-             This is the last warning before instance is stopped !!!
-             If it is absolutely vital that this instance is kept running please do send email with the subject: 'Please keep my instance: $instance.instanceId$ running'
-             Yours truly, Newman.
+             <strong>Dear $subject.name$</strong>,<br><br>
+             It seems that you have left an AWS instance running after working hours.<br><br>
+             It will stopped in about 15 minutes without farther warning.<br><br>
+             If it is absolutely vital that this instance is kept running please do send email with the subject:<br>
+             <strong>Please keep my instance: $instance.instanceId$ running</strong><br>
+             to newman@gigaspaces.com<br><br>
+             <strong>
+             Your obedient servant,<br>
+             Newman.
+             </strong>
         </div>
      </body>
 </html>

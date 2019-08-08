@@ -5,7 +5,6 @@ import com.gigaspaces.actions.NotifyBeforeStopAction;
 import com.gigaspaces.actions.StopAction;
 import io.vavr.control.Option;
 import org.apache.log4j.BasicConfigurator;
-import org.hamcrest.collection.IsEmptyCollection;
 import org.junit.*;
 import software.amazon.awssdk.regions.Region;
 
@@ -22,18 +21,17 @@ import static org.junit.Assert.*;
 public class BrainTest {
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() {
         BasicConfigurator.resetConfiguration();
         BasicConfigurator.configure();
     }
 
     @AfterClass
-    public static void tearDown() throws Exception {
+    public static void tearDown() {
     }
 
     @Test
     public void analyze() {
-        Calendar calendar = new GregorianCalendar(1970, Calendar.JANUARY,10);
         Brain brain = new Brain(new GregorianCalendar(2013,0,31), Collections.singletonList(new Suspect("denysn", "denysn@gigaspaces.com", Tz.EU)));
         Instance instance = new Instance("profile", Region.US_WEST_1, Option.some("name"), "instanceId", "foo", "Foo", Instant.now(), "type", false, "denysn");
         List<Action> actions = brain.analyze(new GregorianCalendar(1970, Calendar.JANUARY, 10), Collections.singletonList(instance));

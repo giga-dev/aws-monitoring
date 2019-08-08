@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import javax.mail.*;
@@ -134,11 +135,17 @@ public class EmailNotifications {
                 Message message = messages[i];
                 logger.info("---------------------------------");
                 logger.info("Email Number {}", (i + 1));
+                Enumeration headers = message.getAllHeaders();
+                while (headers.hasMoreElements()) {
+                    Object o = headers.nextElement();
+                    logger.info("header {}", o);
+                }
                 logger.info("Subject: {}", message.getSubject());
                 logger.info("From: {}", message.getFrom()[0]);
                 logger.info("Text: {}", message.getContent().toString());
                 logger.info("Sent Date: {}", message.getSentDate());
                 if (message.getSubject().trim().equalsIgnoreCase(subject)){
+                    logger.info("found cancellation request [{}] from {}", message.getSubject(), message.getFrom()[0]);
                     message.setFlag(Flags.Flag.DELETED, true);
                     ret = true;
                 }

@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class Loop {
-    @SuppressWarnings("WeakerAccess")
     final static Logger logger = LoggerFactory.getLogger(Loop.class);
 
     public static void main(String[] args) throws InterruptedException{
@@ -86,7 +85,7 @@ public class Loop {
                 }
                 List<Action> actions = brain.analyze(Calendar.getInstance(), snapshot);
                 if(!actions.isEmpty()){
-                    logger.info("executing actions {}", actions);
+                    logger.info("Executing actions {}", actions);
                     for (Action action : actions) {
                         evaluateAction(action, instancesService);
                     }
@@ -112,16 +111,27 @@ public class Loop {
         if(!new EmailNotifications().shouldKeepInstance(action.getInstance().getInstanceId())) {
             logger.info("Stopping instance {}", action.getInstance().getInstanceId());
             instancesService.stopInstance(action.getInstance());
+            try {
+                String subject = String.format("[IMPORTANT] AWS instance (%s) started by (%s) was shutdown by the brain", action.getInstance().getInstanceId(), action.getSubject().getName());
+                io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com");
+                StoppedHTMLTemplate template = new StoppedHTMLTemplate(action);
+                String htmlBody = template.formatHTMLBody();
+                EmailNotifications.send(subject, htmlBody, recipients);
+                logger.info("A warn email was sent to Email sent to {} ", recipients);
+            } catch (IOException | MessagingException e) {
+                logger.error(e.toString(), e);
+            }
         }else{
-            logger.info("Not Stopping instance {}", action.getInstance().getInstanceId());
+            logger.info("Not Stopping instance {} started by {} because he bagged for his life.", action.getInstance().getInstanceId(), action.getSubject().getName());
         }
     }
 
     private static void evaluate(NotifyBeforeStopAction action) {
         logger.info("Executing NotifyBeforeStopAction action {}", action);
         try {
-            String subject = String.format("Alert before stopping AWS instance %s", action.getInstance().getInstanceId());
+            String subject = String.format("[URGENT] Alert before stopping AWS instance %s", action.getInstance().getInstanceId());
             io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com", action.getSubject().getEmail());
+//            io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com");
             WarnHTMLTemplate template = new WarnHTMLTemplate(action);
             String htmlBody = template.formatHTMLBody();
             EmailNotifications.send(subject, htmlBody, recipients);
