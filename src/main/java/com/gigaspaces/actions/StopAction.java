@@ -3,6 +3,7 @@ package com.gigaspaces.actions;
 import com.gigaspaces.Instance;
 import com.gigaspaces.Suspect;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class StopAction extends Action {
@@ -33,7 +34,7 @@ public class StopAction extends Action {
     public String toString() {
         return "StopAction{" +
                 "instance=" + instance +
-                ", time=" + time +
+                ", time=" +  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(time.getTime()) +
                 '}';
     }
 }

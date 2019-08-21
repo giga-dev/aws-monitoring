@@ -3,6 +3,7 @@ package com.gigaspaces;
 import com.gigaspaces.actions.Action;
 import com.gigaspaces.actions.NotifyBeforeStopAction;
 import com.gigaspaces.actions.StopAction;
+import com.gigaspaces.actions.WaitAction;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
@@ -87,7 +88,7 @@ public class Loop {
                 if(!actions.isEmpty()){
                     logger.info("Executing actions {}", actions);
                     for (Action action : actions) {
-                        evaluateAction(action, instancesService);
+                        evaluateAction(action, instancesService, brain);
                     }
                 }
             }catch(Exception e){
@@ -97,15 +98,25 @@ public class Loop {
         }
     }
 
-    private static void evaluateAction(Action action, InstancesService instancesService) {
+    private static void evaluateAction(Action action, InstancesService instancesService, Brain brain) {
         if(action instanceof NotifyBeforeStopAction){
             evaluate((NotifyBeforeStopAction) action);
         }else if (action instanceof StopAction){
-            evaluate((StopAction)action, instancesService);
+            evaluate((StopAction)action, instancesService, brain);
+        }else if (action instanceof WaitAction){
+            evaluate((WaitAction)action, brain);
         }
     }
 
-    private static void evaluate(StopAction action, InstancesService instancesService) {
+    private static void evaluate(WaitAction action, Brain brain) {
+        Calendar currentTime = Calendar.getInstance();
+        if(action.getUntil().getTimeInMillis() < currentTime.getTimeInMillis()){
+            logger.info("Executing wait action {}", action);
+            action.getAfter().onEmpty(() -> brain.removeAction(action.getInstance())).forEach(ac -> brain.setAction(action.getInstance(), ac));
+        }
+    }
+
+    private static void evaluate(StopAction action, InstancesService instancesService, Brain brain) {
         logger.info("Executing stop action {}", action);
         // first peek newman mailbox of email with the subject 'Please keep my instance $instance.instanceId running'
         if(!new EmailNotifications().shouldKeepInstance(action.getInstance().getInstanceId())) {
@@ -123,6 +134,9 @@ public class Loop {
             }
         }else{
             logger.info("Not Stopping instance {} started by {} because he bagged for his life.", action.getInstance().getInstanceId(), action.getSubject().getName());
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.HOUR_OF_DAY, 1);
+            brain.setAction(action.getInstance(), new WaitAction(action.getInstance(), cal, Option.none()));
         }
     }
 

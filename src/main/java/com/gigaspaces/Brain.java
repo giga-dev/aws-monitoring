@@ -79,6 +79,14 @@ class Brain {
     }
 
 
+    public void setAction(Instance instance, Action action){
+        actions.put(instance, action);
+    }
+
+    public void removeAction(Instance instance){
+        actions.remove(instance);
+    }
+
     private boolean isSameDay(Calendar cal1, Calendar cal2) {
         if (cal1 == null || cal2 == null)
             return false;
