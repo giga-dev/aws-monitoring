@@ -18,10 +18,7 @@ import software.amazon.awssdk.services.ec2.model.Tag;
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class Loop {
     final static Logger logger = LoggerFactory.getLogger(Loop.class);
@@ -30,7 +27,11 @@ public class Loop {
         InstancesService instancesService = new InstancesService();
         List<com.gigaspaces.Instance> snapshot = new ArrayList<>();
         CouldTrailEventsReader couldTrailEventsReader = new CouldTrailEventsReader();
-        Brain brain = new Brain(Calendar.getInstance(), Collections.singletonList(new Suspect("denysn", "denysn@gigaspaces.com", Tz.EU)));
+        List<Suspect> suspects = Arrays.asList(new Suspect("denysn", "denysn@gigaspaces.com", Tz.EU)
+                , new Suspect("yoram.weinreb", "yoram.weinreb@gigaspaces.com", Tz.Israel)
+                , new Suspect("aharon.moll", "aharon.moll@gigaspaces.com", Tz.Israel)
+        );
+        Brain brain = new Brain(Calendar.getInstance(), suspects);
         logger.info("starting loop");
         //noinspection InfiniteLoopStatement
         while (true) {

@@ -6,7 +6,7 @@ public class Suspect {
     private String email;
     private Tz timezone;
 
-    public Suspect(String name, String email, Tz timezone) {
+    Suspect(String name, String email, Tz timezone) {
         this.name = name;
         this.email = email;
         this.timezone = timezone;
@@ -20,7 +20,7 @@ public class Suspect {
         return email;
     }
 
-    public Tz getTimezone() {
+    Tz getTimezone() {
         return timezone;
     }
 }
