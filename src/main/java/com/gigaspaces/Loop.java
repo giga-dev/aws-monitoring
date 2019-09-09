@@ -104,18 +104,9 @@ public class Loop {
             evaluate((NotifyBeforeStopAction) action);
         }else if (action instanceof StopAction){
             evaluate((StopAction)action, instancesService, brain);
-        }else if (action instanceof WaitAction){
-            evaluate((WaitAction)action, brain);
         }
     }
 
-    private static void evaluate(WaitAction action, Brain brain) {
-        Calendar currentTime = Calendar.getInstance();
-        if(action.getUntil().getTimeInMillis() < currentTime.getTimeInMillis()){
-            logger.info("Executing wait action {}", action);
-            action.getAfter().onEmpty(() -> brain.removeAction(action.getInstance())).forEach(ac -> brain.setAction(action.getInstance(), ac));
-        }
-    }
 
     private static void evaluate(StopAction action, InstancesService instancesService, Brain brain) {
         logger.info("Executing stop action {}", action);

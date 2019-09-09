@@ -3,6 +3,7 @@ package com.gigaspaces;
 import com.gigaspaces.actions.Action;
 import com.gigaspaces.actions.NotifyBeforeStopAction;
 import com.gigaspaces.actions.StopAction;
+import com.gigaspaces.actions.WaitAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,12 +50,18 @@ class Brain {
                         Calendar notifyTime = ((NotifyBeforeStopAction) action).getTime();
                         long seconds = (notifyTime.getTimeInMillis() - time.getTimeInMillis()) / 1000;
                         long minuets = (int)(seconds / 60);
-//                        int hours = (int) (minuets / 60);
-//                        if(1 < Math.abs(hours)) {
                         if(5 <= Math.abs(minuets)) {
                             action = new StopAction(instance, time, suspect);
                             actions.put(instance, action);
                             res.add(action);
+                        }
+                    }else if (action instanceof WaitAction){
+                        WaitAction waitAction = (WaitAction) action;
+                        logger.info("wait action {} in queue", waitAction);
+                        Calendar currentTime = Calendar.getInstance();
+                        if(waitAction.getUntil().getTimeInMillis() < currentTime.getTimeInMillis()){
+                            logger.info("Disposing wait action {}", action);
+                            actions.remove(waitAction.getInstance());
                         }
                     }
                 }
@@ -66,10 +73,10 @@ class Brain {
     private List<Tz> computeOutOfOfficeTimeZone(Calendar time) {
         ArrayList<Tz> res = new ArrayList<>();
         int dow = time.get(Calendar.DAY_OF_WEEK);
-        if((dow == Calendar.FRIDAY) || (dow == Calendar.SATURDAY) || 18 <= time.get(Calendar.HOUR_OF_DAY)){
+        if((dow == Calendar.FRIDAY) || (dow == Calendar.SATURDAY) || (18 <= time.get(Calendar.HOUR_OF_DAY) || (time.get(Calendar.HOUR_OF_DAY) <= 8))){
             res.add(Tz.Israel);
         }
-        if(((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) || 18 <= time.get(Calendar.HOUR_OF_DAY))){
+        if((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) | (18 <= time.get(Calendar.HOUR_OF_DAY) || (time.get(Calendar.HOUR_OF_DAY) <= 8))){
             res.add(Tz.EU);
         }
         if((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) || ((time.get(Calendar.HOUR_OF_DAY) <= 5  && 16 <= time.get(Calendar.HOUR_OF_DAY)))){
@@ -79,10 +86,12 @@ class Brain {
     }
 
 
+    @SuppressWarnings("WeakerAccess")
     public void setAction(Instance instance, Action action){
         actions.put(instance, action);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void removeAction(Instance instance){
         actions.remove(instance);
     }
