@@ -44,6 +44,7 @@ class Brain {
                     Action action = actions.get(instance);
                     if(action == null){
                         action = new NotifyBeforeStopAction(instance, time, suspect);
+                        logger.info("put notify before stop action {}", action);
                         actions.put(instance, action);
                         res.add(action);
                     }else if(action instanceof  NotifyBeforeStopAction){
@@ -52,6 +53,7 @@ class Brain {
                         long minuets = (int)(seconds / 60);
                         if(5 <= Math.abs(minuets)) {
                             action = new StopAction(instance, time, suspect);
+                            logger.info("put stop action {}", action);
                             actions.put(instance, action);
                             res.add(action);
                         }
@@ -73,10 +75,10 @@ class Brain {
     private List<Tz> computeOutOfOfficeTimeZone(Calendar time) {
         ArrayList<Tz> res = new ArrayList<>();
         int dow = time.get(Calendar.DAY_OF_WEEK);
-        if((dow == Calendar.FRIDAY) || (dow == Calendar.SATURDAY) || (18 <= time.get(Calendar.HOUR_OF_DAY) || (time.get(Calendar.HOUR_OF_DAY) <= 8))){
+        if((dow == Calendar.FRIDAY) || (dow == Calendar.SATURDAY) || (18 <= time.get(Calendar.HOUR_OF_DAY) || (time.get(Calendar.HOUR_OF_DAY) <= 7))){
             res.add(Tz.Israel);
         }
-        if((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) | (18 <= time.get(Calendar.HOUR_OF_DAY) || (time.get(Calendar.HOUR_OF_DAY) <= 8))){
+        if((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) | (18 <= time.get(Calendar.HOUR_OF_DAY) || (time.get(Calendar.HOUR_OF_DAY) <= 7))){
             res.add(Tz.EU);
         }
         if((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) || ((time.get(Calendar.HOUR_OF_DAY) <= 5  && 16 <= time.get(Calendar.HOUR_OF_DAY)))){
@@ -88,12 +90,8 @@ class Brain {
 
     @SuppressWarnings("WeakerAccess")
     public void setAction(Instance instance, Action action){
+        logger.info("setAction {} {}", instance, action);
         actions.put(instance, action);
-    }
-
-    @SuppressWarnings("WeakerAccess")
-    public void removeAction(Instance instance){
-        actions.remove(instance);
     }
 
     private boolean isSameDay(Calendar cal1, Calendar cal2) {
