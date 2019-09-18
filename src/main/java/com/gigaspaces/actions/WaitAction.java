@@ -33,7 +33,7 @@ public class WaitAction extends Action  {
     public String toString() {
         return "WaitAction{" +
                 "instance=" + instance +
-                "until=" +  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(until.getTime()) +
+                "until=" +  formatTime(until) +
                 ", after=" + after +
                 '}';
     }

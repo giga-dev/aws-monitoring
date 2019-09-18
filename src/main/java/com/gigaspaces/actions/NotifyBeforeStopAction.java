@@ -4,6 +4,7 @@ import com.gigaspaces.Instance;
 import com.gigaspaces.Suspect;
 import com.gigaspaces.actions.Action;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 public class NotifyBeforeStopAction extends Action {
@@ -34,7 +35,7 @@ public class NotifyBeforeStopAction extends Action {
     public String toString() {
         return "NotifyBeforeStopAction{" +
                 "instance=" + instance +
-                ", time=" + time +
+                ", time=" + formatTime(time) +
                 '}';
     }
 }

@@ -34,7 +34,7 @@ public class StopAction extends Action {
     public String toString() {
         return "StopAction{" +
                 "instance=" + instance +
-                ", time=" +  new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(time.getTime()) +
+                ", time=" + formatTime(time) +
                 '}';
     }
 }

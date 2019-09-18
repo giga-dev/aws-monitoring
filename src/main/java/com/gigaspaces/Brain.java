@@ -69,6 +69,8 @@ class Brain {
                 }
             }
         }
+        logger.info("-- analyze res is: {}", res);
+        logger.info("-- analyze actions are: {}", actions);
         return res;
     }
 

@@ -75,7 +75,7 @@ public class Loop {
 //                    logger.info("htmlbody {}", htmlBody);
                     try {
                         String subject = String.format("AWS InstancesService change r%d +%d -%d", diff.getRunningSize(), diff.getAddedSize(), diff.getRemovedSize());
-                        io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com");
+                        io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com", "sean.sherman@gigaspaces.com");
                         EmailNotifications.send(subject, htmlBody, recipients);
                         logger.info("Email sent to {} " , recipients);
                     } catch (IOException | MessagingException e) {
@@ -116,7 +116,7 @@ public class Loop {
             instancesService.stopInstance(action.getInstance());
             try {
                 String subject = String.format("[IMPORTANT] AWS instance (%s) started by (%s) was shutdown by the brain", action.getInstance().getInstanceId(), action.getSubject().getName());
-                io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com");
+                io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com", "sean.sherman@gigaspaces.com");
                 StoppedHTMLTemplate template = new StoppedHTMLTemplate(action);
                 String htmlBody = template.formatHTMLBody();
                 EmailNotifications.send(subject, htmlBody, recipients);
@@ -136,7 +136,7 @@ public class Loop {
         logger.info("Executing NotifyBeforeStopAction action {}", action);
         try {
             String subject = String.format("[URGENT] Alert before stopping AWS instance %s", action.getInstance().getInstanceId());
-            io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com", action.getSubject().getEmail());
+            io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com","sean.sherman@gigaspaces.com", action.getSubject().getEmail());
 //            io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com");
             WarnHTMLTemplate template = new WarnHTMLTemplate(action);
             String htmlBody = template.formatHTMLBody();
