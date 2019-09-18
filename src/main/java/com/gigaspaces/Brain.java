@@ -56,6 +56,8 @@ class Brain {
                             logger.info("put stop action {}", action);
                             actions.put(instance, action);
                             res.add(action);
+                        }else{
+                            logger.info("NotifyBeforeStopAction has more {}  minuets for action {}",  15 - Math.abs(minuets), action);
                         }
                     }else if (action instanceof WaitAction){
                         WaitAction waitAction = (WaitAction) action;
@@ -64,6 +66,11 @@ class Brain {
                         if(waitAction.getUntil().getTimeInMillis() < currentTime.getTimeInMillis()){
                             logger.info("Disposing wait action {}", action);
                             actions.remove(waitAction.getInstance());
+                        }else{
+                            long milis = Math.abs(waitAction.getUntil().getTimeInMillis() - currentTime.getTimeInMillis());
+                            long seconds = milis / 1000;
+                            long minuets = (int)(seconds / 60);
+                            logger.info("Wait action {} has more {} minuets", action, minuets);
                         }
                     }
                 }
