@@ -69,8 +69,21 @@ class Brain {
                 }
             }
         }
-        logger.info("-- analyze res is: {}", res);
-        logger.info("-- analyze actions are: {}", actions);
+        logger.info("\n");
+        logger.info("\n");
+        logger.info("analyzer res has [{}] elements", res.size());
+        for(int i = 0; i < res.size(); ++i){
+            logger.info("- res [{}] is: {}", i, res);
+        }
+        logger.info("\n");
+        logger.info("analyzer actions has [{}] values", actions.size());
+        int i = 0;
+        for (Action value : actions.values()) {
+            logger.info("- actions [{}] is: {}", i, value);
+            i+= 1;
+        }
+        logger.info("\n");
+        logger.info("\n");
         return res;
     }
 
