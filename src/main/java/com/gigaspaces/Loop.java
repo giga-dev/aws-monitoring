@@ -127,7 +127,7 @@ public class Loop {
         }else{
             logger.info("Not Stopping instance {} started by {} because he bagged for his life.", action.getInstance().getInstanceId(), action.getSubject().getName());
             Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.HOUR_OF_DAY, 1);
+            cal.add(Calendar.MINUTE, 45);
             brain.setAction(action.getInstance(), new WaitAction(action.getInstance(), cal, Option.none()));
         }
     }

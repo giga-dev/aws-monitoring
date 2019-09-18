@@ -51,7 +51,7 @@ class Brain {
                         Calendar notifyTime = ((NotifyBeforeStopAction) action).getTime();
                         long seconds = (notifyTime.getTimeInMillis() - time.getTimeInMillis()) / 1000;
                         long minuets = (int)(seconds / 60);
-                        if(5 <= Math.abs(minuets)) {
+                        if(15 <= Math.abs(minuets)) {
                             action = new StopAction(instance, time, suspect);
                             logger.info("put stop action {}", action);
                             actions.put(instance, action);

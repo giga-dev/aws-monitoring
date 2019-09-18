@@ -14,9 +14,23 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+    <scala.version>2.12.8</scala.version>
   </properties>
 
   <dependencies>
+      <!--      scala-->
+      <!-- https://mvnrepository.com/artifact/dev.zio/zio -->
+      <dependency>
+          <groupId>dev.zio</groupId>
+          <artifactId>zio_2.12</artifactId>
+          <version>1.0.0-RC12-1</version>
+      </dependency>
+      <dependency>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-library</artifactId>
+          <version>${scala.version}</version>
+      </dependency>
+
       <!-- https://mvnrepository.com/artifact/software.amazon.awssdk/cloudtrail -->
       <dependency>
           <groupId>software.amazon.awssdk</groupId>
@@ -119,6 +133,20 @@
 
   <build>
       <plugins>
+          <plugin>
+              <groupId>org.scala-tools</groupId>
+              <artifactId>maven-scala-plugin</artifactId>
+              <version>2.15.2</version>
+              <executions>
+                  <execution>
+                      <goals>
+                          <goal>compile</goal>
+                          <goal>testCompile</goal>
+                      </goals>
+                  </execution>
+              </executions>
+          </plugin>
+
           <plugin>
               <groupId>org.codehaus.mojo</groupId>
               <artifactId>exec-maven-plugin</artifactId>
