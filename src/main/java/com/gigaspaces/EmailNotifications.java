@@ -138,14 +138,14 @@ public class EmailNotifications {
                 Enumeration headers = message.getAllHeaders();
                 while (headers.hasMoreElements()) {
                     Object o = headers.nextElement();
-                    logger.info("header {}", o);
+//                    logger.info("header {}", o);
                 }
                 logger.info("Subject: {}", message.getSubject());
                 logger.info("From: {}", message.getFrom()[0]);
                 logger.info("Text: {}", message.getContent().toString());
                 logger.info("Sent Date: {}", message.getSentDate());
                 if (message.getSubject().trim().equalsIgnoreCase(subject)){
-                    logger.info("found cancellation request [{}] from {}", message.getSubject(), message.getFrom()[0]);
+                    logger.info("found cancellation request [{}] from {} -- deleting it!", message.getSubject(), message.getFrom()[0]);
                     message.setFlag(Flags.Flag.DELETED, true);
                     ret = true;
                 }
