@@ -103,7 +103,7 @@ class Brain {
         if((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) | (17 <= time.get(Calendar.HOUR_OF_DAY) || (time.get(Calendar.HOUR_OF_DAY) <= 7))){
             res.add(Tz.EU);
         }
-        if((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) || ((5 <= time.get(Calendar.HOUR_OF_DAY) && 16 <= time.get(Calendar.HOUR_OF_DAY)))){
+        if((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) || ((5 <= time.get(Calendar.HOUR_OF_DAY) && time.get(Calendar.HOUR_OF_DAY) <= 16))){
             res.add(Tz.US);
         }
         return res;

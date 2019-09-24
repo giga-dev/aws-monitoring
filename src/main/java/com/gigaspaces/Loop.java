@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.*;
 
 public class Loop {
+    @SuppressWarnings("WeakerAccess")
     final static Logger logger = LoggerFactory.getLogger(Loop.class);
 
     public static void main(String[] args) throws InterruptedException{
