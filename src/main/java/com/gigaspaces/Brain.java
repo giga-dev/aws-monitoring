@@ -97,10 +97,10 @@ class Brain {
     private List<Tz> computeOutOfOfficeTimeZone(Calendar time) {
         ArrayList<Tz> res = new ArrayList<>();
         int dow = time.get(Calendar.DAY_OF_WEEK);
-        if((dow == Calendar.FRIDAY) || (dow == Calendar.SATURDAY) || (18 <= time.get(Calendar.HOUR_OF_DAY) || (time.get(Calendar.HOUR_OF_DAY) <= 7))){
+        if((dow == Calendar.FRIDAY) || (dow == Calendar.SATURDAY) || (17 <= time.get(Calendar.HOUR_OF_DAY) || (time.get(Calendar.HOUR_OF_DAY) <= 7))){
             res.add(Tz.Israel);
         }
-        if((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) | (18 <= time.get(Calendar.HOUR_OF_DAY) || (time.get(Calendar.HOUR_OF_DAY) <= 7))){
+        if((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) | (17 <= time.get(Calendar.HOUR_OF_DAY) || (time.get(Calendar.HOUR_OF_DAY) <= 7))){
             res.add(Tz.EU);
         }
         if((dow == Calendar.SATURDAY) || (dow == Calendar.SUNDAY) || ((time.get(Calendar.HOUR_OF_DAY) <= 5  && 16 <= time.get(Calendar.HOUR_OF_DAY)))){

@@ -30,6 +30,7 @@ public class Loop {
         List<Suspect> suspects = Arrays.asList(new Suspect("denysn", "denysn@gigaspaces.com", Tz.EU)
                 , new Suspect("yoram.weinreb", "yoram.weinreb@gigaspaces.com", Tz.Israel)
                 , new Suspect("aharon.moll", "aharon.moll@gigaspaces.com", Tz.Israel)
+                , new Suspect("dixson.huie", "dixson.huie@gigaspaces.com", Tz.US)
         );
         Brain brain = new Brain(Calendar.getInstance(), suspects);
         logger.info("starting loop");
