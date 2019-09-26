@@ -1,13 +1,17 @@
 package com.gigaspaces;
 import io.vavr.collection.List;
+import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Function;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
@@ -110,6 +114,35 @@ public class EmailNotifications {
         }
         emailFolder.close(true);
         store.close();
+    }
+
+
+    public <T> List<T> processEmails(Function<Message,Option<T>> process){
+        java.util.List<T> res = new ArrayList<T>();
+        Properties properties = new Properties();
+
+        String host = "pop.gmail.com";
+        properties.put("mail.pop3.host", host);
+        properties.put("mail.pop3.port", "995");
+        properties.put("mail.pop3.starttls.enable", "true");
+        Session emailSession = Session.getDefaultInstance(properties);
+        try {
+            Store store = emailSession.getStore("pop3s");
+            Properties ep = readEmailProperties();
+            store.connect(host, ep.getProperty("fromUser"), ep.getProperty("fromUserEmailPassword"));
+            Folder emailFolder = store.getFolder("INBOX");
+            emailFolder.open(Folder.READ_WRITE);
+            Message[] messages = emailFolder.getMessages();
+
+            for (Message message : messages) {
+                process.apply(message).forEach(res::add);
+            }
+            emailFolder.close(true);
+            store.close();
+        }catch(Exception e){
+            logger.error(e.toString(), e);
+        }
+        return List.ofAll(res);
     }
 
     public boolean shouldKeepInstance(String instanceId) {

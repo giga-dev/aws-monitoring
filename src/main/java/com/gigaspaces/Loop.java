@@ -8,11 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import scala.Responder;
 import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.regions.servicemetadata.EmailServiceMetadata;
 import software.amazon.awssdk.services.cloudtrail.model.Event;
 import software.amazon.awssdk.services.ec2.model.Instance;
 import software.amazon.awssdk.services.ec2.model.Reservation;
 import software.amazon.awssdk.services.ec2.model.Tag;
 
+import javax.mail.Flags;
 import javax.mail.MessagingException;
 import java.io.IOException;
 import java.time.Instant;
@@ -22,6 +24,7 @@ public class Loop {
     @SuppressWarnings("WeakerAccess")
     final static Logger logger = LoggerFactory.getLogger(Loop.class);
     private Users users;
+    private InstancesService instancesService;
 
     private Loop(Users users){
         this.users = users;
@@ -30,7 +33,7 @@ public class Loop {
         return users.notified().map(User::getEmail);
     }
     private void run() throws InterruptedException {
-        InstancesService instancesService = new InstancesService();
+        instancesService = new InstancesService();
         List<com.gigaspaces.Instance> snapshot = new ArrayList<>();
         CouldTrailEventsReader couldTrailEventsReader = new CouldTrailEventsReader();
 
@@ -64,19 +67,11 @@ public class Loop {
                     }
                 }
 
-//                CreateStack
-//                "aws:cloudformation:stack-id"
-//                  "arn:aws:cloudformation:eu-west-1:535075449278:stack/eksctl-eks-cluster-nodegroup-ng-be39c976/4740e2c0-b67e-11e9-90ef-02a08d23d630"
-
                 Collections.sort(snapshot);
-//                for (com.gigaspaces.Instance instance : snapshot) {
-//                    logger.info("instance: {}", instance);
-//                }
                 Diff diff = Diff.create(HashSet.ofAll(snapshot), HashSet.ofAll(found));
                 if (diff.wasModified()) {
                     HTMLTemplate template = new HTMLTemplate(diff);
                     String htmlBody = template.formatHTMLBody();
-//                    logger.info("htmlbody {}", htmlBody);
                     try {
                         String subject = String.format("AWS InstancesService change r%d +%d -%d", diff.getRunningSize(), diff.getAddedSize(), diff.getRemovedSize());
                         EmailNotifications.send(subject, htmlBody, notified());
@@ -95,7 +90,8 @@ public class Loop {
                         evaluateAction(action, instancesService, brain);
                     }
                 }
-            readAdminCommands().forEach(cmd -> execute(cmd));
+                List<com.gigaspaces.Instance> finalSnapshot = snapshot;
+                readAdminCommands(snapshot).forEach(cmd -> execute(cmd, finalSnapshot));
 
             }catch(Exception e){
                 logger.error(e.toString(), e);
@@ -104,16 +100,73 @@ public class Loop {
         }
     }
 
-    private void execute(AdminCommand cmd) {
+    private void execute(AdminCommand cmd, List<com.gigaspaces.Instance> snapshot) {
         try{
+            logger.info("Executing admin command {}", cmd);
+            if(cmd instanceof ListAdminCommand) {
+                Diff diff = new Diff(io.vavr.collection.List.ofAll(snapshot));
+                HTMLTemplate template = new HTMLTemplate(diff);
+                String htmlBody = template.formatHTMLBody();
+                try {
+                    String subject = String.format("[AWS reply] list %d", diff.getRunningSize());
+                    EmailNotifications.send(subject, htmlBody, io.vavr.collection.List.of(cmd.getRequester()));
+                    logger.info("Email sent to {} ", notified());
+                } catch (IOException | MessagingException e) {
+                    logger.error(e.toString(), e);
+                }
+            }else if(cmd instanceof StopAdminCommand){
+                StopAdminCommand stopAdminCommand = (StopAdminCommand)cmd;
+                logger.info("Stopping instance {}", stopAdminCommand.getInstance());
+                instancesService.stopInstance(stopAdminCommand.getInstance());
+                try {
+                    String subject = String.format("[AWS reply] stop %s", stopAdminCommand.getInstance().getInstanceId());
+                    io.vavr.collection.List<String> recipients = notified();
+                    String htmlBody = "";
+                    EmailNotifications.send(subject, htmlBody, recipients);
+                    logger.info("A stop email was sent to Email sent to {} ", recipients);
+                } catch (IOException | MessagingException e) {
+                    logger.error(e.toString(), e);
+                }
+            }
 
         }catch (Exception e){
             logger.error(e.toString(), e);
         }
     }
 
-    private io.vavr.collection.List<AdminCommand> readAdminCommands() {
-        return io.vavr.collection.List.empty(); //todo
+    private io.vavr.collection.List<AdminCommand> readAdminCommands(final List<com.gigaspaces.Instance> snapshot) {
+        EmailNotifications en = new EmailNotifications();
+        io.vavr.collection.Set<String> admins = HashSet.ofAll(users.admin().map(User::getEmail));
+        return en.processEmails(message -> {
+            try {
+                String email = extractEmail(message.getFrom()[0].toString());
+                if (admins.contains(email)) {
+                    message.setFlag(Flags.Flag.DELETED, true);
+                    return createAdminCommand(message.getSubject().trim(), email, snapshot);
+                }else{
+                    return Option.none();
+                }
+            }catch(Exception e){
+                logger.error(e.toString(), e);
+                return Option.none();
+            }
+        });
+    }
+
+    private Option<AdminCommand> createAdminCommand(String request, String email, List<com.gigaspaces.Instance> snapshot) {
+        if("list".equals(request)) {
+            return Option.some(new ListAdminCommand(email));
+        }else if(request != null && request.startsWith("stop") && 1 < request.split("\\s+").length){
+            String id = request.split("\\s+")[1];
+            Option<com.gigaspaces.Instance> found = io.vavr.collection.List.ofAll(snapshot).find(instance -> instance.getInstanceId().equals(id));
+            return found.map(instance -> new StopAdminCommand(email, instance));
+        }
+        return Option.none();
+    }
+
+    // Bella Greene <bella.greene@yellowwhitecontacts.info>
+    private String extractEmail(String name) {
+        return name.substring(name.indexOf("<") + 1, name.indexOf(">"));
     }
 
     public static void main(String[] args) throws InterruptedException, IOException {
@@ -142,7 +195,7 @@ public class Loop {
                 StoppedHTMLTemplate template = new StoppedHTMLTemplate(action);
                 String htmlBody = template.formatHTMLBody();
                 EmailNotifications.send(subject, htmlBody, recipients);
-                logger.info("A warn email was sent to Email sent to {} ", recipients);
+                logger.info("A stop email was sent to Email sent to {} ", recipients);
             } catch (IOException | MessagingException e) {
                 logger.error(e.toString(), e);
             }

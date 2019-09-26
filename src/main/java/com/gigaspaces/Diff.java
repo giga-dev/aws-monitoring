@@ -23,6 +23,10 @@ public class Diff {
         this.unchanged = unchanged;
     }
 
+    public Diff(List<Instance> unchanged){
+        this(List.empty(), List.empty(), unchanged.sorted());
+    }
+
     @SuppressWarnings("WeakerAccess")
     public boolean wasModified(){
         return !added.isEmpty() || !removed.isEmpty();
