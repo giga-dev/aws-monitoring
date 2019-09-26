@@ -1,18 +1,15 @@
 package com.gigaspaces.actions;
 
 import com.gigaspaces.Instance;
-import com.gigaspaces.Suspect;
-import com.gigaspaces.actions.Action;
-
-import java.text.SimpleDateFormat;
+import com.gigaspaces.User;
 import java.util.Calendar;
 
 public class NotifyBeforeStopAction extends Action {
     private final Instance instance;
     private final Calendar time;
-    private Suspect subject;
+    private User subject;
 
-    public NotifyBeforeStopAction(Instance instance, Calendar time, Suspect subject) {
+    public NotifyBeforeStopAction(Instance instance, Calendar time, User subject) {
         super();
         this.instance = instance;
         this.time = time;
@@ -27,7 +24,7 @@ public class NotifyBeforeStopAction extends Action {
         return time;
     }
 
-    public Suspect getSubject() {
+    public User getSubject() {
         return subject;
     }
 

@@ -11,14 +11,15 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 class Brain {
+    @SuppressWarnings("WeakerAccess")
     final static Logger logger = LoggerFactory.getLogger(Brain.class);
 
     private Map<Instance, Action> actions = new HashMap<>();
 
     private Calendar currentDay;
-    private List<Suspect> suspects;
+    private io.vavr.collection.List<User> suspects;
 
-    Brain(Calendar currentDay, List<Suspect> suspects) {
+    Brain(Calendar currentDay, io.vavr.collection.List<User> suspects) {
         this.currentDay = currentDay;
         this.suspects = suspects;
     }
@@ -32,13 +33,13 @@ class Brain {
 
         List<Tz> outOfOffinceTZ = computeOutOfOfficeTimeZone(time);
         logger.info("analyzing at {} out of office zones are {}", new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(time.getTime()), outOfOffinceTZ);
-        for (Suspect suspect : suspects) {
+        suspects.forEach(suspect -> {
             if(outOfOffinceTZ.contains(suspect.getTimezone())){
                 for (Instance instance : snapshot) {
                     if(instance.isSpot()){
                         continue;
                     }
-                    if(!suspect.getName().equals(instance.getEffectiveUserName())){
+                    if(!suspect.is(instance.getEffectiveUserName())){
                         continue;
                     }
                     Action action = actions.get(instance);
@@ -75,7 +76,7 @@ class Brain {
                     }
                 }
             }
-        }
+        });
         logger.info("\n");
         logger.info("\n");
         logger.info("analyzer res has [{}] elements", res.size());

@@ -1,14 +1,12 @@
 package com.gigaspaces;
 
-import com.gigaspaces.actions.Action;
-import com.gigaspaces.actions.NotifyBeforeStopAction;
-import com.gigaspaces.actions.StopAction;
-import com.gigaspaces.actions.WaitAction;
+import com.gigaspaces.actions.*;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Stream;
 import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import scala.Responder;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudtrail.model.Event;
 import software.amazon.awssdk.services.ec2.model.Instance;
@@ -23,16 +21,20 @@ import java.util.*;
 public class Loop {
     @SuppressWarnings("WeakerAccess")
     final static Logger logger = LoggerFactory.getLogger(Loop.class);
+    private Users users;
 
-    public static void main(String[] args) throws InterruptedException{
+    private Loop(Users users){
+        this.users = users;
+    }
+    private io.vavr.collection.List<String> notified(){
+        return users.notified().map(User::getEmail);
+    }
+    private void run() throws InterruptedException {
         InstancesService instancesService = new InstancesService();
         List<com.gigaspaces.Instance> snapshot = new ArrayList<>();
         CouldTrailEventsReader couldTrailEventsReader = new CouldTrailEventsReader();
-        List<Suspect> suspects = Arrays.asList(new Suspect("denysn", "denysn@gigaspaces.com", Tz.EU)
-                , new Suspect("yoram.weinreb", "yoram.weinreb@gigaspaces.com", Tz.Israel)
-                , new Suspect("aharon.moll", "aharon.moll@gigaspaces.com", Tz.Israel)
-                , new Suspect("dixson.huie", "dixson.huie@gigaspaces.com", Tz.US)
-        );
+
+        io.vavr.collection.List<User> suspects = users.monitored();
         Brain brain = new Brain(Calendar.getInstance(), suspects);
         logger.info("starting loop");
         //noinspection InfiniteLoopStatement
@@ -77,9 +79,8 @@ public class Loop {
 //                    logger.info("htmlbody {}", htmlBody);
                     try {
                         String subject = String.format("AWS InstancesService change r%d +%d -%d", diff.getRunningSize(), diff.getAddedSize(), diff.getRemovedSize());
-                        io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com", "sean.sherman@gigaspaces.com");
-                        EmailNotifications.send(subject, htmlBody, recipients);
-                        logger.info("Email sent to {} " , recipients);
+                        EmailNotifications.send(subject, htmlBody, notified());
+                        logger.info("Email sent to {} " , notified());
                     } catch (IOException | MessagingException e) {
                         logger.error(e.toString(), e);
                     }
@@ -94,6 +95,8 @@ public class Loop {
                         evaluateAction(action, instancesService, brain);
                     }
                 }
+            readAdminCommands().forEach(cmd -> execute(cmd));
+
             }catch(Exception e){
                 logger.error(e.toString(), e);
             }
@@ -101,7 +104,24 @@ public class Loop {
         }
     }
 
-    private static void evaluateAction(Action action, InstancesService instancesService, Brain brain) {
+    private void execute(AdminCommand cmd) {
+        try{
+
+        }catch (Exception e){
+            logger.error(e.toString(), e);
+        }
+    }
+
+    private io.vavr.collection.List<AdminCommand> readAdminCommands() {
+        return io.vavr.collection.List.empty(); //todo
+    }
+
+    public static void main(String[] args) throws InterruptedException, IOException {
+        Loop loop = new Loop(Users.readFrom("config.ini"));
+        loop.run();
+    }
+
+    private  void evaluateAction(Action action, InstancesService instancesService, Brain brain) {
         if(action instanceof NotifyBeforeStopAction){
             evaluate((NotifyBeforeStopAction) action);
         }else if (action instanceof StopAction){
@@ -110,7 +130,7 @@ public class Loop {
     }
 
 
-    private static void evaluate(StopAction action, InstancesService instancesService, Brain brain) {
+    private  void evaluate(StopAction action, InstancesService instancesService, Brain brain) {
         logger.info("Executing stop action {}", action);
         // first peek newman mailbox of email with the subject 'Please keep my instance $instance.instanceId running'
         if(!new EmailNotifications().shouldKeepInstance(action.getInstance().getInstanceId())) {
@@ -118,7 +138,7 @@ public class Loop {
             instancesService.stopInstance(action.getInstance());
             try {
                 String subject = String.format("[IMPORTANT] AWS instance (%s) started by (%s) was shutdown by the brain", action.getInstance().getInstanceId(), action.getSubject().getName());
-                io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com", "sean.sherman@gigaspaces.com");
+                io.vavr.collection.List<String> recipients = notified();
                 StoppedHTMLTemplate template = new StoppedHTMLTemplate(action);
                 String htmlBody = template.formatHTMLBody();
                 EmailNotifications.send(subject, htmlBody, recipients);
@@ -134,12 +154,11 @@ public class Loop {
         }
     }
 
-    private static void evaluate(NotifyBeforeStopAction action) {
+    private  void evaluate(NotifyBeforeStopAction action) {
         logger.info("Executing NotifyBeforeStopAction action {}", action);
         try {
             String subject = String.format("[URGENT] Alert before stopping AWS instance %s", action.getInstance().getInstanceId());
-            io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com","sean.sherman@gigaspaces.com", action.getSubject().getEmail());
-//            io.vavr.collection.List<String> recipients = io.vavr.collection.List.of("barak.barorion@gigaspaces.com");
+            io.vavr.collection.List<String> recipients = notified();
             WarnHTMLTemplate template = new WarnHTMLTemplate(action);
             String htmlBody = template.formatHTMLBody();
             EmailNotifications.send(subject, htmlBody, recipients);
