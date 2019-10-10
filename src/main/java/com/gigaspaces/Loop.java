@@ -6,9 +6,7 @@ import io.vavr.collection.Stream;
 import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Responder;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.regions.servicemetadata.EmailServiceMetadata;
 import software.amazon.awssdk.services.cloudtrail.model.Event;
 import software.amazon.awssdk.services.ec2.model.Instance;
 import software.amazon.awssdk.services.ec2.model.Reservation;
@@ -59,8 +57,9 @@ public class Loop {
                                     String effectiveUserName = isSpot ? getEffectiveUserName(couldTrailEventsReader, runningInstance, instance, groupName).getOrElse(s.username()) : s.username();
                                     if("AutoScaling".equals(effectiveUserName) && stackId.isDefined()){
                                         effectiveUserName = couldTrailEventsReader.findUserNameByStackId(runningInstance.getProfile(), runningInstance.getRegion(), stackId.get()).getOrElse(effectiveUserName);
+                                        effectiveUserName = couldTrailEventsReader.findUserNameByStackId(runningInstance.getProfile(), runningInstance.getRegion(), stackId.get()).getOrElse(effectiveUserName);
                                     }
-                                    return new com.gigaspaces.Instance(runningInstance.getProfile(), runningInstance.getRegion(), name, instance.instanceId(), s.username(), s.eventName(), s.eventTime(), instance.instanceType().toString(), isSpot, effectiveUserName);
+                                    return new com.gigaspaces.Instance(runningInstance.getProfile(), runningInstance.getRegion(), name, instance.instanceId(), s.username(), s.eventName(), s.eventTime(), instance.instanceType().toString(), groupName, effectiveUserName);
                                 }).forEach(found::add);
                             }
                         }).map(found::add);

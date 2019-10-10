@@ -4,6 +4,8 @@ import io.vavr.control.Option;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -55,7 +57,7 @@ final static Logger logger = LoggerFactory.getLogger(SpotInsts.class);
 //        logger.info("Searching for spotinsts user for group {}", groupName);
         ZonedDateTime zdt = ZonedDateTime.ofInstant(eventTime, ZoneId.systemDefault());
         Calendar cal = GregorianCalendar.from(zdt);
-        cal.add(Calendar.DAY_OF_YEAR, -2);
+        cal.add(Calendar.DAY_OF_YEAR, -1);
         long start = cal.getTimeInMillis();
         cal.add(Calendar.DAY_OF_YEAR, 4);
         long end = cal.getTimeInMillis();
@@ -71,12 +73,12 @@ final static Logger logger = LoggerFactory.getLogger(SpotInsts.class);
 //                    logger.info("response header {}", header);
 //                };
                 String bodyAsString = EntityUtils.toString(response.getEntity());
-//                logger.info("while searching for group {} got body is {}", groupName, bodyAsString);
+                logger.info("while searching for group {} got body is {}", groupName, bodyAsString);
                 JSONObject body = new JSONObject(bodyAsString);
                 for (Object item : body.getJSONObject("response").getJSONArray("items")) {
                     JSONObject jItem = (JSONObject) item;
                     if(jItem.getString("resourceType").equals("Elastigroup")
-                            && jItem.getString("actionType").equals("Create")
+                            && (jItem.getString("actionType").equals("Create") || jItem.getString("actionType").equals("Update"))
                             && jItem.getString("resourceId").equals(groupName)) {
 //                        logger.info("spotinsts user for group {} is {}", groupName, jItem.getString("user"));
                         return Option.some(jItem.getString("user"));
@@ -87,6 +89,31 @@ final static Logger logger = LoggerFactory.getLogger(SpotInsts.class);
         }catch(Exception e){
             logger.error(e.toString(), e);
             return Option.none();
+        }
+    }
+
+    public void stopGroup(String profile, String groupName){
+        try(CloseableHttpClient httpclient = HttpClients.createDefault()){
+            String accountId = profile.contains("se") ? seAccountId : devAccountId;
+            HttpPut httpReq = new HttpPut(String.format("https://api.spotinst.io/aws/ec2/group/%s/capacity?accountId=%s", groupName, accountId));
+            httpReq.setConfig(RequestConfig.custom()
+                    .setConnectionRequestTimeout(1000).setConnectTimeout(1000).setSocketTimeout(1000).build());
+            httpReq.addHeader("Content-Type", "application/json");
+            httpReq.addHeader("Authorization", "Bearer " + token);
+            httpReq.addHeader("Content-type", "application/json");
+            httpReq.setEntity(new StringEntity("{\n" +
+                    "    \"capacity\": -{\n" +
+                    "        \"minimum\": 0,\n" +
+                    "        \"maximum\": 0,\n" +
+                    "        \"target\": 0\n" +
+                    "    }\n" +
+                    "}"));
+            try(CloseableHttpResponse response = httpclient.execute(httpReq)){
+                String bodyAsString = EntityUtils.toString(response.getEntity());
+                logger.info("stopGroup {} returns {}", groupName, bodyAsString);
+            }
+        }catch(Exception e) {
+            logger.error(e.toString(), e);
         }
     }
 
@@ -111,10 +138,8 @@ final static Logger logger = LoggerFactory.getLogger(SpotInsts.class);
                 logger.info("got body: {}", bodyAsString);
 
             }
-            return;
         }catch(Exception e){
             logger.error(e.toString(), e);
-            return;
         }
 
     }

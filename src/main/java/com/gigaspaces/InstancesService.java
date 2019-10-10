@@ -1,6 +1,7 @@
 package com.gigaspaces;
 
 import com.amazonaws.ClientConfiguration;
+import io.vavr.control.Option;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
@@ -63,14 +64,25 @@ public class InstancesService {
     }
 
     void stopInstance(Instance instance) {
-        try (Ec2Client client = Ec2Client.builder()
-                .region(instance.getRegion())
-                .credentialsProvider(ProfileCredentialsProvider.builder().profileName(instance.getProfile()).build())
-                .build()) {
-            client.stopInstances(StopInstancesRequest.builder().instanceIds(instance.getInstanceId()).build());
-        } catch(Ec2Exception e){
-            if (400 != e.statusCode()) {
-                throw e;
+        Option<String> groupName = instance.getSpotGroupName();
+        if(!groupName.isDefined()){
+            try (Ec2Client client = Ec2Client.builder()
+                    .region(instance.getRegion())
+                    .credentialsProvider(ProfileCredentialsProvider.builder().profileName(instance.getProfile()).build())
+                    .build()) {
+                client.stopInstances(StopInstancesRequest.builder().instanceIds(instance.getInstanceId()).build());
+            } catch (Ec2Exception e) {
+                if (400 != e.statusCode()) {
+                    throw e;
+                }
+            }
+        }else{
+            String gn = groupName.get();
+            try {
+                SpotInsts spotInsts = new SpotInsts();
+                spotInsts.stopGroup(instance.getProfile(), gn);
+            }catch(Exception e){
+                logger.error(e.toString(), e);
             }
         }
 

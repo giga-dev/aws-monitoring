@@ -36,10 +36,10 @@ class Brain {
         suspects.forEach(suspect -> {
             if(outOfOffinceTZ.contains(suspect.getTimezone())){
                 for (Instance instance : snapshot) {
-                    if(instance.isSpot()){
+                    if(!suspect.is(instance.getEffectiveUserName())){
                         continue;
                     }
-                    if(!suspect.is(instance.getEffectiveUserName())){
+                    if(instance.isSpot() && !suspect.isSpotsMonitored()){
                         continue;
                     }
                     Action action = actions.get(instance);

@@ -7,9 +7,11 @@ public class User{
     private String name;
     private String email;
     private boolean monitored;
+    private boolean spotsMonitored;
     private boolean admin;
     private  Tz timezone;
     private boolean notified;
+
 
 
     public User() {
@@ -65,6 +67,14 @@ public class User{
 
     public boolean is(String name) {
         return name.equals(getEmail()) || getEmail().startsWith(name);
+    }
+
+    public boolean isSpotsMonitored() {
+        return spotsMonitored;
+    }
+
+    public void setSpotsMonitored(boolean spotsMonitored) {
+        this.spotsMonitored = spotsMonitored;
     }
 
     @Override
