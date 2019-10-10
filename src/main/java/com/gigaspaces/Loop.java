@@ -210,7 +210,7 @@ public class Loop {
         logger.info("Executing NotifyBeforeStopAction action {}", action);
         try {
             String subject = String.format("[URGENT] Alert before stopping AWS instance %s", action.getInstance().getInstanceId());
-            io.vavr.collection.List<String> recipients = notified();
+            io.vavr.collection.List<String> recipients = notified().push(action.getSubject().getEmail());
             WarnHTMLTemplate template = new WarnHTMLTemplate(action);
             String htmlBody = template.formatHTMLBody();
             EmailNotifications.send(subject, htmlBody, recipients);
